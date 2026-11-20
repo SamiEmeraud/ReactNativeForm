@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo, memo } from 'react';
 import {View, Text, TextInput, FlatList, Pressable, ActivityIndicator, Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -12,7 +12,8 @@ const TAILLE_PAGE = 10;
 
 const formaterPrix = (prix) => prix.toFixed(2).replace('.', ',') + ' €';
 
-const CarteProduit = ({ produit }) => (
+// memo : la carte ne se réaffiche que si son produit change
+const CarteProduit = memo(({ produit }) => (
  <View style={styles.carte}>
  {IMAGES[produit.image]
  ? <Image source={IMAGES[produit.image]} style={styles.image} resizeMode="cover" />
@@ -28,11 +29,11 @@ const CarteProduit = ({ produit }) => (
  </Text>
  </View>
  </View>
-);
+));
 
 const Separateur = () => <View style={styles.separateur} />;
 
-export const ProduitsScreen = ({ utilisateur, onDeconnexion }) => {
+export const ProduitsScreen = () => {
  const [produits, setProduits] = useState([]);
  const [categories, setCategories] = useState([]);
  const [recherche, setRecherche] = useState('');
@@ -85,19 +86,20 @@ export const ProduitsScreen = ({ utilisateur, onDeconnexion }) => {
  };
  }, [recherche, categorie, version]);
 
- const recharger = () => setVersion((v) => v + 1);
+ // useCallback : ces fonctions gardent la même identité d'un rendu à l'autre
+ const recharger = useCallback(() => setVersion((v) => v + 1), []);
 
- const reessayer = () => {
+ const reessayer = useCallback(() => {
  setChargement(true);
  recharger();
- };
+ }, [recharger]);
 
- const rafraichir = () => {
+ const rafraichir = useCallback(() => {
  setRafraichissement(true);
  recharger();
- };
+ }, [recharger]);
 
- const chargerPlus = async () => {
+ const chargerPlus = useCallback(async () => {
  if (chargementPlus || produits.length >= total) return;
 
  const lecture = generation.current;
@@ -114,7 +116,21 @@ export const ProduitsScreen = ({ utilisateur, onDeconnexion }) => {
  } finally {
  setChargementPlus(false);
  }
- };
+ }, [chargementPlus, produits.length, total, recherche, categorie]);
+
+ // useCallback : FlatList et CarteProduit (memo) reçoivent toujours la même fonction
+ const afficherProduit = useCallback(({ item }) => <CarteProduit produit={item} />, []);
+
+ // useMemo : ces valeurs ne sont recalculées que si leurs dépendances changent.
+ // Les hooks doivent être AVANT les return anticipés (chargement / erreur) plus bas.
+ const filtreActif = useMemo(
+ () => recherche.trim() !== '' || categorie !== null,
+ [recherche, categorie]
+ );
+ const nbEnRupture = useMemo(
+ () => produits.filter((p) => p.stock === 0).length,
+ [produits]
+ );
 
  if (chargement) {
  return (
@@ -138,8 +154,6 @@ export const ProduitsScreen = ({ utilisateur, onDeconnexion }) => {
  );
  }
 
- const filtreActif = recherche.trim() !== '' || categorie !== null;
-
  return (
  <SafeAreaView edges={['bottom']} style={styles.ecran}>
  <View style={styles.fixe}>
@@ -151,6 +165,10 @@ export const ProduitsScreen = ({ utilisateur, onDeconnexion }) => {
  value={recherche}
  onChangeText={setRecherche}
  />
+ <Text style={styles.resume}>
+ {produits.length} / {total} produits affichés
+ {nbEnRupture > 0 ? ` · ${nbEnRupture} en rupture` : ''}
+ </Text>
  </View>
 
  <FlatList
@@ -182,7 +200,7 @@ export const ProduitsScreen = ({ utilisateur, onDeconnexion }) => {
  chargementPlus ? <ActivityIndicator style={styles.pied} color="rgb(15, 15, 15)" /> : null
  }
  keyExtractor={(item) => String(item.id)}
- renderItem={({ item }) => <CarteProduit produit={item} />}
+ renderItem={afficherProduit}
  ItemSeparatorComponent={Separateur}
  ListEmptyComponent={
  <Text style={styles.vide}>

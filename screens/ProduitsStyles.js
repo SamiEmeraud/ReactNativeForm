@@ -20,6 +20,7 @@ export default StyleSheet.create({
  sousTitre: { fontSize: 14, color: '#6B7280', marginTop: 4 },
  separateur: { height: 10 },
  vide: { textAlign: 'center', color: '#6B7280', fontSize: 16, marginTop: 40 },
+ resume: { color: '#6B7280', fontSize: 13, marginTop: 6 },
 
  carte: {
  backgroundColor: '#fff',

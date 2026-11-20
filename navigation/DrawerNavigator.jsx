@@ -6,7 +6,9 @@ import { ProduitsScreen } from '../screens/ProduitsScreen';
 
 const Drawer = createDrawerNavigator();
 
-export default function DrawerNavigator({ utilisateur, onDeconnexion, onModifie }) {
+// Grâce au contexte, les écrans n'ont plus besoin de props :
+// on peut utiliser component={...} directement
+export default function DrawerNavigator() {
   return (
     <Drawer.Navigator
       initialRouteName="Menu Principal"
@@ -19,34 +21,31 @@ export default function DrawerNavigator({ utilisateur, onDeconnexion, onModifie 
     >
       <Drawer.Screen
         name="Menu Principal"
+        component={TabNavigator}
         options={{
           drawerIcon: ({ color, size }) => (
             <Ionicons name="home-outline" size={size} color={color} />
           ),
         }}
-      >
-        {() => <TabNavigator utilisateur={utilisateur} onDeconnexion={onDeconnexion} onModifie={onModifie} />}
-      </Drawer.Screen>
+      />
       <Drawer.Screen
         name="Produits"
+        component={ProduitsScreen}
         options={{
           drawerIcon: ({ color, size }) => (
             <Ionicons name="list-outline" size={size} color={color} />
           ),
         }}
-      >
-        {() => <ProduitsScreen utilisateur={utilisateur} onDeconnexion={onDeconnexion} />}
-      </Drawer.Screen>
+      />
       <Drawer.Screen
         name="Profil"
+        component={ProfilScreen}
         options={{
           drawerIcon: ({ color, size }) => (
             <Ionicons name="person-outline" size={size} color={color} />
           ),
         }}
-      >
-        {() => <ProfilScreen utilisateur={utilisateur} onDeconnexion={onDeconnexion} onModifie={onModifie} />}
-      </Drawer.Screen>
+      />
     </Drawer.Navigator>
   );
 }

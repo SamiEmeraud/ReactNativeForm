@@ -6,7 +6,7 @@ import { ProfilScreen } from '../screens/ProfilScreen';
 
 const Tab = createBottomTabNavigator();
 
-export default function TabNavigator({ utilisateur, onDeconnexion, onModifie }) {
+export default function TabNavigator() {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -26,12 +26,8 @@ export default function TabNavigator({ utilisateur, onDeconnexion, onModifie }) 
       })}
     >
       <Tab.Screen name="Accueil" component={AccueilScreen} />
-      <Tab.Screen name="Catalogue">
-        {() => <ProduitsScreen utilisateur={utilisateur} onDeconnexion={onDeconnexion} />}
-      </Tab.Screen>
-      <Tab.Screen name="Compte">
-        {() => <ProfilScreen utilisateur={utilisateur} onDeconnexion={onDeconnexion} onModifie={onModifie} />}
-      </Tab.Screen>
+      <Tab.Screen name="Catalogue" component={ProduitsScreen} />
+      <Tab.Screen name="Compte" component={ProfilScreen} />
     </Tab.Navigator>
   );
 }

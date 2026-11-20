@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { View, Text, TextInput, Button, ScrollView, Alert } from 'react-native';
 import { validerEmail, validerMdp, validerConfirmation, validerMdpSaisi } from '../utils/validation';
 import { modifierEmail, modifierMdp } from '../database';
+import { useUtilisateur } from '../context/UtilisateurContext';
 
 // Même style que InscriptionScreen
 const champ = { backgroundColor: 'white', borderColor: 'gray', borderWidth: 1, padding: 10, marginVertical: 10 };
@@ -11,7 +12,9 @@ const titre = { fontSize: 18, fontWeight: '700', color: 'rgb(15, 15, 15)', margi
 
 const MDP_VIDE = { ancien: '', nouveau: '', confirmation: '' };
 
-export const ProfilScreen = ({ utilisateur, onDeconnexion, onModifie }) => {
+export const ProfilScreen = () => {
+  // useContext : l'utilisateur et les actions viennent du contexte, plus des props
+  const { utilisateur, deconnecter, modifier } = useUtilisateur();
   const [email, setEmail] = useState('');
   const [erreurEmail, setErreurEmail] = useState(null);
   const [mdp, setMdp] = useState(MDP_VIDE);
@@ -26,7 +29,7 @@ export const ProfilScreen = ({ utilisateur, onDeconnexion, onModifie }) => {
     try {
       await modifierEmail(utilisateur.id, email);
       // On met à jour l'utilisateur connecté pour afficher le nouvel email
-      onModifie({ ...utilisateur, email: email.trim().toLowerCase() });
+      modifier({ email: email.trim().toLowerCase() });
       setEmail('');
       Alert.alert('Email modifié', 'Votre adresse email a bien été changée.');
     } catch (err) {
@@ -106,7 +109,7 @@ export const ProfilScreen = ({ utilisateur, onDeconnexion, onModifie }) => {
       <Button title="Changer le mot de passe" color="rgb(15, 15, 15)" onPress={changerMdp} />
 
       <View style={{ marginTop: 32 }}>
-        <Button title="Se déconnecter" color="rgb(15, 15, 15)" onPress={onDeconnexion} />
+        <Button title="Se déconnecter" color="rgb(15, 15, 15)" onPress={deconnecter} />
       </View>
     </ScrollView>
   );
